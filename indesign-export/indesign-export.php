@@ -3,13 +3,18 @@
  * Plugin Name: Frank's Super Cool InDesign Tagged Text Exporter
  * Plugin URI: https://github.com/fabravo/wordpress-indesign-tagged-text-exporter
  * Description: Export selected posts as Adobe InDesign tagged text documents.
- * Version: 1.0
+ * Version: 1.0.1
  * Author: Frank A. Bravo
  * Author URI: https://www.LinkedIn.com/in/fabravo/
 */
 
-// settings
-$posts_per_page = 20;
+// Settings
+define('POSTS_PER_PAGE', 20);
+define('INDESIGN_HEADLINE_STYLE', "<pstyle:24head>");
+define('INDESIGN_PARAGRAPH_STYLE', "<pstyle:text>");
+define('INDESIGN_SUBHEAD_STYLE', "<pstyle:12sub>");
+define('INDESIGN_BYLINE_STYLE', "<pstyle:byline>By ");
+define('INDESIGN_END_OF_STORY_ICON', "<cstyle:endbullet>n<cstyle:>");
 
 
 // Add a custom menu item in the admin panel
@@ -43,7 +48,7 @@ function indesign_export_page() {
             $args = array(
                 'post_type' => 'post',
                 'post_status' => 'publish',
-                'posts_per_page' => $posts_per_page, // Adjust as needed
+                'posts_per_page' => POSTS_PER_PAGE, // Adjust as needed
             );
 
             $posts = get_posts($args);
@@ -94,19 +99,18 @@ function indesign_export_post($post_id) {
 
     // Extract the content of <h4> if it exists
     preg_match('/<h4[^>]*>(.*?)<\/h4>/', $content, $h4_matches);
-    $h4_content = isset($h4_matches[1]) ? $h4_matches[1] : '';
+    $subhead_content = isset($h4_matches[1]) ? $h4_matches[1] : '';
 
     // Remove the extracted <h4> content from the main content
     $content = str_replace($h4_matches[0], '', $content);
 
     // Apply transformations to the content
     $content = preg_replace('/<!--.*?-->/', '', $content); // Remove all HTML comments
-    $content = str_replace('<p>', '<pstyle:text>', $content); // Replace <p> with <pstyle:text>
+    $content = str_replace('<p>', INDESIGN_PARAGRAPH_STYLE, $content); // Replace <p> with <pstyle:text>
     $content = str_replace('<strong>', '<cTypeface:Bold>', $content); // Replace <strong> with <cTypeface:Bold>
     $content = str_replace('</strong>', '<cTypeface:>', $content); // Replace <strong> with <cTypeface:Bold>
     $content = str_replace('<em>', '<cTypeface:Italic>', $content); // Replace <em> with <cTypeface:Italic>
     $content = str_replace('</em>', '<cTypeface:>', $content); // Replace <em> with <cTypeface:Bold>
-    $content = str_replace('<p>', '<pstyle:text>', $content); // Replace <p> with <pstyle:text>
     $content = str_replace('<!-- wp:paragraph -->', '', $content); // Remove <!-- wp:paragraph -->
     $content = preg_replace('/<\/?[a-zA-Z]+>/', '', $content); // Strip other HTML tags
     $content = preg_replace('/<a[^>]+>/', '', $content); // Remove <a> tags
@@ -120,15 +124,14 @@ function indesign_export_post($post_id) {
     // Remove extra line breaks between paragraphs
     $content = preg_replace('/\n{2,}/', "\r\n", $content); // Preserve line breaks
     
-    // Replace <h4> tags with <pstyle:12sub>
-    $h4_content = preg_replace('/<h4[^>]*>/', '<pstyle:12sub>', $h4_content);
-
-    // Remove closing </h4> from the replaced <h4>
-    $h4_content = preg_replace('/<\/h4>/', '', $h4_content);
-
+    if ($subhead_content)
+    {
+        $subhead = INDESIGN_SUBHEAD_STYLE . $subhead_content . "\r\n";
+    }
+    
     // Create a temporary file
     $temp_file = tempnam(sys_get_temp_dir(), 'indesign_export_');
-    file_put_contents($temp_file, "<ASCII-WIN>\r\n<pstyle:24head>" . $post->post_title . "\r\n<pstyle:12sub>" . $h4_content . "\r\n<pstyle:byline>By " . $author . $content . "<cstyle:endbullet>n<cstyle:>");
+    file_put_contents($temp_file, "<ASCII-WIN>\r\n" . INDESIGN_HEADLINE_STYLE . $post->post_title . "\r\n" . $subhead . INDESIGN_BYLINE_STYLE . $author . $content . INDESIGN_END_OF_STORY_ICON);
 
     // Send the file for download using JavaScript
     echo "<script>window.location.href = '" . plugins_url('download.php', __FILE__) . "?file=" . urlencode($temp_file) . "&filename=" . urlencode($filename) . "';</script>";
