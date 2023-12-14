@@ -4,9 +4,9 @@ if (isset($_GET['file'])) {
 
     if (file_exists($file)) {
         header('Content-Description: File Transfer');
-        header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename=' . basename($file));
-        header('Content-Transfer-Encoding: binary');
+        header('Content-Type: text/plain; charset=US-ASCII'); // Set Content-Type to text/plain and specify ASCII charset
+        header('Content-Disposition: attachment; filename=' . basename($_GET['filename']));
+        header('Content-Transfer-Encoding: UTF-8');
         header('Connection: Keep-Alive');
         header('Expires: 0');
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
