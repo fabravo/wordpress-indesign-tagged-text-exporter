@@ -3,13 +3,15 @@
  * Plugin Name: Frank's Super Cool InDesign Tagged Text Exporter
  * Plugin URI: https://github.com/fabravo/wordpress-indesign-tagged-text-exporter
  * Description: Export selected posts as Adobe InDesign tagged text documents.
- * Version: 1.0.1
+ * Version: 1.1
  * Author: Frank A. Bravo
  * Author URI: https://www.LinkedIn.com/in/fabravo/
 */
 
 // Settings
-define('POSTS_PER_PAGE', 20);
+define('POSTS_PER_PAGE', 50); // -1 to include all posts
+define('WORDPRESS_ROLE_LEVEL', "publish_posts"); // 'publish_posts' for 'author' role and above
+define('WORDPRESS_POST_STATUS', array('publish', 'draft'));
 define('INDESIGN_HEADLINE_STYLE', "<pstyle:24head>");
 define('INDESIGN_PARAGRAPH_STYLE', "<pstyle:text>");
 define('INDESIGN_SUBHEAD_STYLE', "<pstyle:12sub>");
@@ -24,7 +26,7 @@ function indesign_export_menu() {
     add_menu_page(
         'InDesign Exporter',
         'InDesign Exporter',
-        'publish_posts', // Change this line to 'publish_posts' for 'author' role and above
+        WORDPRESS_ROLE_LEVEL, 
         'indesign-export',
         'indesign_export_page'
     );
@@ -33,8 +35,16 @@ function indesign_export_menu() {
 // Callback function to display the export page
 function indesign_export_page() {
     ?>
+    <style>
+        .publish-date, .post-status {
+            margin-left: 10px; /* Adjust the margin as needed */
+            color: #888; /* Adjust the color as needed */
+        }
+    </style>
+
     <div class="wrap">
         <h2>Frank's Super Cool InDesign Tagged Text Exporter</h2>
+        <p>Select one post and press the export button.</p>
         <?php
         if (isset($_GET['exported_filename'])) {
             echo '<div class="updated"><p>File exported: ' . esc_html($_GET['exported_filename']) . '</p></div>';
@@ -42,12 +52,12 @@ function indesign_export_page() {
         ?>
         <form method="post" action="">
             <p>
-                <input type="submit" class="button-primary" name="export_posts" value="Export Selected Posts">
+                <input type="submit" class="button-primary" name="export_posts" value="Export Selected Post">
             </p>
             <?php
             $args = array(
                 'post_type' => 'post',
-                'post_status' => 'publish',
+                'post_status' => WORDPRESS_POST_STATUS, // Include both published and draft posts
                 'posts_per_page' => POSTS_PER_PAGE, // Adjust as needed
             );
 
@@ -58,6 +68,8 @@ function indesign_export_page() {
                 <label>
                     <input type="checkbox" name="export_post[]" value="<?php echo esc_attr($post->ID); ?>">
                     <?php echo esc_html($post->post_title); ?>
+                    <span class="post-status">(<?php echo esc_html($post->post_status); ?>)</span>
+                    <span class="publish-date"><?php echo esc_html(get_the_date('F j, Y', $post->ID)); ?></span>
                 </label><br>
                 <?php
             }
@@ -70,8 +82,10 @@ function indesign_export_page() {
     // Handle form submission
     if (isset($_POST['export_posts'])) {
         if (isset($_POST['export_post']) && is_array($_POST['export_post'])) {
-            $selected_post_id = absint(current($_POST['export_post']));
-            indesign_export_post($selected_post_id);
+            foreach ($_POST['export_post'] as $selected_post_id) {
+                $selected_post_id = absint($selected_post_id);
+                indesign_export_post($selected_post_id);
+            }
         } else {
             echo '<p>No posts selected for export.</p>';
         }
@@ -129,8 +143,8 @@ function indesign_export_post($post_id) {
         $subhead = INDESIGN_SUBHEAD_STYLE . $subhead_content . "\r\n";
     }
     
-    // Create a temporary file
-    $temp_file = tempnam(sys_get_temp_dir(), 'indesign_export_');
+    // Create a temporary file for each post
+    $temp_file = tempnam(sys_get_temp_dir(), 'indesign_export_') . '.txt';
     file_put_contents($temp_file, "<ASCII-WIN>\r\n" . INDESIGN_HEADLINE_STYLE . $post->post_title . "\r\n" . $subhead . INDESIGN_BYLINE_STYLE . $author . $content . INDESIGN_END_OF_STORY_ICON);
 
     // Send the file for download using JavaScript
