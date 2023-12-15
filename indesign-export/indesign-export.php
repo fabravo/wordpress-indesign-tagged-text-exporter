@@ -3,7 +3,7 @@
  * Plugin Name: Frank's Super Cool InDesign Tagged Text Exporter
  * Plugin URI: https://github.com/fabravo/wordpress-indesign-tagged-text-exporter
  * Description: Export selected posts as Adobe InDesign tagged text documents.
- * Version: 1.1
+ * Version: 1.2
  * Author: Frank A. Bravo
  * Author URI: https://www.LinkedIn.com/in/fabravo/
 */
@@ -11,7 +11,9 @@
 // Settings
 define('POSTS_PER_PAGE', 50); // -1 to include all posts
 define('WORDPRESS_ROLE_LEVEL', "publish_posts"); // 'publish_posts' for 'author' role and above
-define('WORDPRESS_POST_STATUS', array('publish', 'draft'));
+define('WORDPRESS_POST_STATUS', array('publish', 'draft')); // Include both published and draft posts
+define('WORDPRESS_CATEGORIES_INCLUDED', ''); // list of categories ('real estate, print ready') or blank for all 
+define('WORDPRESS_CATEGORIES_EXCLUDE_UNCATEGORIZED', '1'); // values are 0 (false, or include them) or 1 (true, or exclude them) 
 define('INDESIGN_HEADLINE_STYLE', "<pstyle:24head>");
 define('INDESIGN_PARAGRAPH_STYLE', "<pstyle:text>");
 define('INDESIGN_SUBHEAD_STYLE', "<pstyle:12sub>");
@@ -57,9 +59,33 @@ function indesign_export_page() {
             <?php
             $args = array(
                 'post_type' => 'post',
-                'post_status' => WORDPRESS_POST_STATUS, // Include both published and draft posts
-                'posts_per_page' => POSTS_PER_PAGE, // Adjust as needed
+                'post_status' => WORDPRESS_POST_STATUS, 
+                'posts_per_page' => POSTS_PER_PAGE, 
             );
+
+            if (WORDPRESS_CATEGORIES_INCLUDED)
+            {
+                $included_categories = explode(', ', WORDPRESS_CATEGORIES_INCLUDED);
+
+                if (!empty($included_categories)) {
+                    $args['tax_query'] = array(
+                        array(
+                            'taxonomy' => 'category',
+                            'field'    => 'slug',
+                            'terms'    => $included_categories,
+                        ),
+                    );
+                }
+            }
+    
+            if (WORDPRESS_CATEGORIES_EXCLUDE_UNCATEGORIZED)
+            {
+                // Get the excluded category IDs from the list
+                $excluded_category = get_category_by_slug('uncategorized');
+                if ($excluded_category) {
+                    $args['category__not_in'] = array($excluded_category->term_id);
+                }
+            }
 
             $posts = get_posts($args);
 
@@ -67,7 +93,7 @@ function indesign_export_page() {
                 ?>
                 <label>
                     <input type="checkbox" name="export_post[]" value="<?php echo esc_attr($post->ID); ?>">
-                    <?php echo esc_html($post->post_title); ?>
+                    <a href="<?php echo esc_url(get_permalink($post->ID)); ?>" target="_blank"><?php echo esc_html($post->post_title); ?></a>
                     <span class="post-status">(<?php echo esc_html($post->post_status); ?>)</span>
                     <span class="publish-date"><?php echo esc_html(get_the_date('F j, Y', $post->ID)); ?></span>
                 </label><br>
