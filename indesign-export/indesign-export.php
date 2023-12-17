@@ -8,18 +8,7 @@
  * Author URI: https://www.LinkedIn.com/in/fabravo/
 */
 
-// Settings
-define('POSTS_PER_PAGE', 50); // -1 to include all posts
-define('WORDPRESS_ROLE_LEVEL', "publish_posts"); // 'publish_posts' for 'author' role and above
-define('WORDPRESS_POST_STATUS', array('publish', 'draft')); // Include both published and draft posts
-define('WORDPRESS_CATEGORIES_INCLUDED', ''); // list of categories ('real estate, print ready') or blank for all 
-define('WORDPRESS_CATEGORIES_EXCLUDE_UNCATEGORIZED', '1'); // values are 0 (false, or include them) or 1 (true, or exclude them) 
-define('INDESIGN_HEADLINE_STYLE', "<pstyle:24head>");
-define('INDESIGN_PARAGRAPH_STYLE', "<pstyle:text>");
-define('INDESIGN_SUBHEAD_STYLE', "<pstyle:12sub>");
-define('INDESIGN_BYLINE_STYLE', "<pstyle:byline>By ");
-define('INDESIGN_END_OF_STORY_ICON', "<cstyle:endbullet>n<cstyle:>");
-
+include('config.inc.php'); // this is where all the settings are kept
 
 // Add a custom menu item in the admin panel
 add_action('admin_menu', 'indesign_export_menu');
