@@ -3,7 +3,7 @@
  * Plugin Name: Frank's Super Cool InDesign Tagged Text Exporter
  * Plugin URI: https://github.com/fabravo/wordpress-indesign-tagged-text-exporter
  * Description: Export selected posts as Adobe InDesign tagged text documents.
- * Version: 1.2
+ * Version: 1.2.1
  * Author: Frank A. Bravo
  * Author URI: https://www.LinkedIn.com/in/fabravo/
 */
@@ -121,7 +121,7 @@ function indesign_export_post($post_id) {
     $filename = sanitize_title($post->post_title) . '.txt';
 
     // Extract the author information
-    $author = get_the_author_meta('display_name', $post->post_author);
+    $author = INDESIGN_BYLINE_STYLE . get_the_author_meta('display_name', $post->post_author) . "\r\n";
 
     // Remove images (figures) and captions from the content
     $content = indesign_remove_images_and_captions($content);
@@ -135,7 +135,9 @@ function indesign_export_post($post_id) {
 
     // Apply transformations to the content
     $content = preg_replace('/<!--.*?-->/', '', $content); // Remove all HTML comments
-    $content = str_replace('<p>', INDESIGN_PARAGRAPH_STYLE, $content); // Replace <p> with <pstyle:text>
+    $content = str_replace('<blockquote class="wp-block-quote">', INDESIGN_PULLQUOTE_STYLE, $content); // Replace pullquote
+    $content = str_replace('<cite>', INDESIGN_PULLQUOTE_STYLE_NAME, $content); // Replace pullquote name
+    $content = str_replace('<p>', INDESIGN_PARAGRAPH_STYLE, $content); // Replace <p> with 
     $content = str_replace('<strong>', '<cTypeface:Bold>', $content); // Replace <strong> with <cTypeface:Bold>
     $content = str_replace('</strong>', '<cTypeface:>', $content); // Replace <strong> with <cTypeface:Bold>
     $content = str_replace('<em>', '<cTypeface:Italic>', $content); // Replace <em> with <cTypeface:Italic>
@@ -155,12 +157,12 @@ function indesign_export_post($post_id) {
     
     if ($subhead_content)
     {
-        $subhead = INDESIGN_SUBHEAD_STYLE . $subhead_content . "\r\n";
+        $subhead = INDESIGN_SUBHEAD_STYLE . indesign_convert_for_print($subhead_content) . "\r\n";
     }
     
     // Create a temporary file for each post
     $temp_file = tempnam(sys_get_temp_dir(), 'indesign_export_') . '.txt';
-    file_put_contents($temp_file, "<ASCII-WIN>\r\n" . INDESIGN_HEADLINE_STYLE . $post->post_title . "\r\n" . $subhead . INDESIGN_BYLINE_STYLE . $author . $content . INDESIGN_END_OF_STORY_ICON);
+    file_put_contents($temp_file, "<ASCII-WIN>\r\n" . INDESIGN_HEADLINE_STYLE . indesign_convert_for_print($post->post_title) . "\r\n" . $subhead . $author . $content . INDESIGN_END_OF_STORY_ICON);
 
     // Send the file for download using JavaScript
     echo "<script>window.location.href = '" . plugins_url('download.php', __FILE__) . "?file=" . urlencode($temp_file) . "&filename=" . urlencode($filename) . "';</script>";
@@ -184,14 +186,6 @@ function indesign_remove_images_and_captions($content) {
 
 function indesign_convert_for_print($string) // For new web design, combines wiki_link and html_converter methods
 {
-    //$patterns = array('/(==B\s+)([\s\S]*)(==)/', '/(==I\s+)([\s\S]*)(==)/', '/(==BI\s+)([\s\S]*)(==)/'); //Old search = ([0-9a-zA-Z\s]*)
-    $patterns = array('/(==B\s+)([^==]*)(==)/', '/(==I\s+)([^==]*)(==)/', '/(==BI\s+)([^==]*)(==)/'); //Old search = ([0-9a-zA-Z\s]*)
-
-    $replace = array('<cTypeface:Bold>\2<cTypeface:>',
-                    '<cTypeface:Italic>\2<cTypeface:>',
-                    '<cTypeface:Bold><cTypeface:Italic>\2<cTypeface:>');
-    $string = preg_replace($patterns, $replace, $string);
-    //$patterns = array('/\[(http|ftp)?(s)?\:\/\/?([^"\s]+)\s?/i', '/([0-9a-zA-Z\s]*)\]/i');
     $patterns = array('/\[(http|ftp)?(s)?\:\/\/?([^"\s]+)\s?/i', '/([0-9a-zA-Z\s]*)\]/i'); //\.[a-zA-Z\s]{2,4}+
     //First search for [, http OR ftp, possibly followed by a single "s", ://,
     //anything except a " or space, followed by a single space
