@@ -3,7 +3,7 @@
  * Plugin Name: Frank's Super Cool InDesign Tagged Text Exporter
  * Plugin URI: https://github.com/fabravo/wordpress-indesign-tagged-text-exporter
  * Description: Export selected posts as Adobe InDesign tagged text documents.
- * Version: 1.2.1
+ * Version: 1.2.2
  * Author: Frank A. Bravo
  * Author URI: https://www.LinkedIn.com/in/fabravo/
 */
@@ -47,29 +47,34 @@ function indesign_export_page() {
             </p>
             <?php
             $args = array(
-                'post_type' => 'post',
-                'post_status' => WORDPRESS_POST_STATUS, 
-                'posts_per_page' => POSTS_PER_PAGE, 
+                'post_type'      => 'post',
+                'post_status'    => WORDPRESS_POST_STATUS, 
+                'posts_per_page' => POSTS_PER_PAGE,
             );
 
-            if (WORDPRESS_CATEGORIES_INCLUDED)
-            {
-                $included_categories = explode(', ', WORDPRESS_CATEGORIES_INCLUDED);
-
-                if (!empty($included_categories)) {
-                    $args['tax_query'] = array(
-                        array(
-                            'taxonomy' => 'category',
-                            'field'    => 'slug',
-                            'terms'    => $included_categories,
-                        ),
+            if (WORDPRESS_TAGS_INCLUDED) {
+                $included_tags = explode(', ', WORDPRESS_TAGS_INCLUDED);
+                if (!empty($included_tags)) {
+                    $args['tax_query'][] = array(
+                        'taxonomy' => 'post_tag',
+                        'field'    => 'slug',
+                        'terms'    => $included_tags,
                     );
                 }
             }
-    
-            if (WORDPRESS_CATEGORIES_EXCLUDE_UNCATEGORIZED)
-            {
-                // Get the excluded category IDs from the list
+
+            if (WORDPRESS_CATEGORIES_INCLUDED) {
+                $included_categories = explode(', ', WORDPRESS_CATEGORIES_INCLUDED);
+                if (!empty($included_categories)) {
+                    $args['tax_query'][] = array(
+                        'taxonomy' => 'category',
+                        'field'    => 'slug',
+                        'terms'    => $included_categories,
+                    );
+                }
+            }
+
+            if (WORDPRESS_CATEGORIES_EXCLUDE_UNCATEGORIZED) {
                 $excluded_category = get_category_by_slug('uncategorized');
                 if ($excluded_category) {
                     $args['category__not_in'] = array($excluded_category->term_id);
@@ -93,6 +98,10 @@ function indesign_export_page() {
     </div>
 
     <?php
+//	$tags = get_tags();
+//	foreach ($tags as $tag) {
+//	    echo $tag->name . ': ' . $tag->slug . '<br>';
+//	}
 
     // Handle form submission
     if (isset($_POST['export_posts'])) {

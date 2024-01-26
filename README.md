@@ -37,6 +37,9 @@ It sounds hard, but it's really not.
 If you find something not working within this plugin, please feel free to email me at **support [@] bravoitc.com**. 
 
 ## Versions
+v. 1.2.2
+  * added ability to select tags of posts to include
+  
 v. 1.2.1
   * added ability to select tags of posts to include
   * added aditional variables to config
