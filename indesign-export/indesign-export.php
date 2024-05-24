@@ -171,7 +171,7 @@ function indesign_export_post($post_id) {
     
     // Create a temporary file for each post
     $temp_file = tempnam(sys_get_temp_dir(), 'indesign_export_') . '.txt';
-    file_put_contents($temp_file, "<ASCII-WIN>\r\n" . INDESIGN_HEADLINE_STYLE . indesign_convert_for_print($post->post_title) . "\r\n" . $subhead . $author . $content . INDESIGN_END_OF_STORY_ICON);
+    file_put_contents($temp_file, "<ASCII-WIN>\r\n" . INDESIGN_HEADLINE_STYLE . indesign_convert_for_print($post->post_title) . "\r\n" . INDESIGN_SUBHEAD_STYLE . indesign_convert_for_print($post->newspack_post_subtitle) . "\r\n" . $author . $content . var_dump(get_object_vars($post)) . INDESIGN_END_OF_STORY_ICON);
 
     // Send the file for download using JavaScript
     echo "<script>window.location.href = '" . plugins_url('download.php', __FILE__) . "?file=" . urlencode($temp_file) . "&filename=" . urlencode($filename) . "';</script>";
