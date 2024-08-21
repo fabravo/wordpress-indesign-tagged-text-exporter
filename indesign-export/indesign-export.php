@@ -201,7 +201,7 @@ function indesign_convert_for_print($string) // For new web design, combines wik
     //Second search any combo of numbers/characters/spaces followed by ]
     //Both searches are case-insensitive
     $replace = array('', '\1');
-    $string = preg_replace($patterns, $replace, $string);
+    //$string = preg_replace($patterns, $replace, $string);
 
     $string = str_ireplace('--', '<0x2014>', $string);
     $string = str_ireplace('chr(151)', '<0x2014>', $string);
