@@ -136,11 +136,11 @@ function indesign_export_post($post_id) {
     $content = indesign_remove_images_and_captions($content);
 
     // Extract the content of <h4> if it exists
-    preg_match('/<h4[^>]*>(.*?)<\/h4>/', $content, $h4_matches);
-    $subhead_content = isset($h4_matches[1]) ? $h4_matches[1] : '';
+    //preg_match('/<h4[^>]*>(.*?)<\/h4>/', $content, $h4_matches);
+    //$subhead_content = isset($h4_matches[1]) ? $h4_matches[1] : '';
 
     // Remove the extracted <h4> content from the main content
-    $content = str_replace($h4_matches[0], '', $content);
+    //$content = str_replace($h4_matches[0], '', $content);
 
     // Apply transformations to the content
     $content = preg_replace('/<!--.*?-->/', '', $content); // Remove all HTML comments
@@ -171,7 +171,7 @@ function indesign_export_post($post_id) {
     
     // Create a temporary file for each post
     $temp_file = tempnam(sys_get_temp_dir(), 'indesign_export_') . '.txt';
-    file_put_contents($temp_file, "<ASCII-WIN>\r\n" . INDESIGN_HEADLINE_STYLE . indesign_convert_for_print($post->post_title) . "\r\n" . INDESIGN_SUBHEAD_STYLE . indesign_convert_for_print($post->newspack_post_subtitle) . "\r\n" . $author . $content . var_dump(get_object_vars($post)) . INDESIGN_END_OF_STORY_ICON);
+    file_put_contents($temp_file, "<ASCII-WIN>\r\n" . INDESIGN_HEADLINE_STYLE . indesign_convert_for_print($post->post_title) . "\r\n" . INDESIGN_SUBHEAD_STYLE . indesign_convert_for_print($post->newspack_post_subtitle) . "\r\n" . $author . $content . INDESIGN_END_OF_STORY_ICON);
 
     // Send the file for download using JavaScript
     echo "<script>window.location.href = '" . plugins_url('download.php', __FILE__) . "?file=" . urlencode($temp_file) . "&filename=" . urlencode($filename) . "';</script>";
