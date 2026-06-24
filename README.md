@@ -2,7 +2,7 @@
 A Wordpress Plugin to export posts as InDesign Tagged text
 
 ## Background
-I'm [Frank Bravo](https://www.linkedin.com/in/fabravo) and I am a [technologist](https://www.bravoitc.com). My regular full-time job is CTO at a hyper-local, non-profit media organization, the [Embarcadero Media Foundation](https://www.EmbarcaderoMediaFoundation.org) in the San Francisco Bay Area. In 2024, we are migrating our home-grown CMS to a Wordpress-based system. Since we still produce several print products but are digital first, we needed a way to export **InDesign Tagged Text** from Wordpress. Since there wasn't a good solution out there that I could find, I built my own.
+I'm [Frank Bravo](https://www.linkedin.com/in/fabravo) and I am a [technologist](https://www.bravoitc.com). When I built this, regular full-time job was CTO at a hyper-local, non-profit media organization, the [Embarcadero Media Foundation](https://www.EmbarcaderoMediaFoundation.org) in the San Francisco Bay Area. In 2024, we are migrating our home-grown CMS to a Wordpress-based system. Since we still produce several print products but are digital first, we needed a way to export **InDesign Tagged Text** from Wordpress (Newspack). Since there wasn't a good solution out there that I could find and Newspack didn't see the value of building such a tool, I built my own.
 
 ## Setup
 The basis for this code is what the [Embarcadero Media Foundation](https://www.EmbarcaderoMediaFoundation.org) needed to continue to export files. I believe I've made it functional enough to work for most needs. There is a series of setup values that need to be set at the top of the **/indesign-export/config.inc.php** file.
